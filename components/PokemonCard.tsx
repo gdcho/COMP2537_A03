@@ -47,17 +47,14 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
 
   return (
     <div
-      className="pokeCard bg-gray-200 p-6 rounded shadow"
+      className="pokeCard bg-gray-200 p-6 rounded shadow border-2 border-blue-500"
       style={{ maxWidth: "300px", maxHeight: "600px" }}
     >
       <Typography variant="h6" className="text-center">
         {pokemon.name.toUpperCase()}
       </Typography>
       <img
-        src={
-          pokemonData?.sprites.front_default ||
-          "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/25.png"
-        }
+        src={pokemonData?.sprites.front_default || "unknown.png"}
         alt={pokemon.name}
         width={100}
         height={100}
@@ -73,13 +70,18 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
       </div>
 
       {pokemonData && (
-        <Dialog onClose={handleClose} open={open} maxWidth="xl">
+        <Dialog
+          onClose={handleClose}
+          open={open}
+          sx={{ "& .MuiPaper-root": { width: "300px" } }}
+        >
           <DialogTitle>{pokemonData.name.toUpperCase()}</DialogTitle>
           <DialogContent
             style={{
               position: "relative",
               backgroundImage: "url('/pokedexsmall.png')",
               backgroundSize: "cover",
+              border: "1px solid red",
             }}
           >
             <div
@@ -90,7 +92,7 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
                 width: "100%",
                 height: "100%",
                 backgroundColor: "black",
-                opacity: 0.6,
+                opacity: 0.7,
                 zIndex: 0,
               }}
             />
@@ -116,7 +118,7 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
                 <br></br>Stats
                 <hr style={{ borderWidth: "2px", borderBlockColor: "blue" }} />
               </Typography>
-              <ul style ={{color: "white"}}>
+              <ul style={{ color: "white" }}>
                 {pokemonData.stats.map((stat: any) => (
                   <li key={stat.stat.name}>
                     {stat.stat.name}: {stat.base_stat}

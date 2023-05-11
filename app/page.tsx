@@ -18,6 +18,7 @@ interface PokemonWithType {
 
 export default function Page() {
   const PAGE_SIZE = 10;
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [filter, setFilter] = useState<string[]>([]);
@@ -27,10 +28,16 @@ export default function Page() {
 
   useEffect(() => {
     (async () => {
-      const count = await fetchTotalCount();
-      setTotalCount(count);
-      const count2 = await fetchTotalCount();
-      setTotalPages(Math.ceil(count2 / PAGE_SIZE));
+      try {
+        const count = await fetchTotalCount();
+        setTotalCount(count);
+        const count2 = await fetchTotalCount();
+        setTotalPages(Math.ceil(count2 / PAGE_SIZE));
+      } catch (error) {
+        console.error("Error fetching total count:", error);
+      } finally {
+        setIsLoading(false);
+      }
     })();
   }, []);
 
@@ -127,11 +134,13 @@ export default function Page() {
         ))}
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-      />
+      {!isLoading && (
+        <Pagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+        />
+      )}
     </div>
   );
 }

@@ -23,19 +23,21 @@ const types = [
   "psychic",
   "rock",
   "steel",
-  "water"
+  "water",
 ];
 
 const Filter: React.FC<FilterProps> = ({ setFilter }) => {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   const toggleType = (type: string) => {
-    const newSelectedTypes = selectedTypes.includes(type)
-      ? selectedTypes.filter((t) => t !== type)
-      : [...selectedTypes, type];
+    setSelectedTypes((selectedTypes) => {
+      const newSelectedTypes = selectedTypes.includes(type)
+        ? selectedTypes.filter((t) => t !== type)
+        : [...selectedTypes, type];
 
-    setSelectedTypes(newSelectedTypes);
-    setFilter(newSelectedTypes);
+      setFilter(newSelectedTypes);
+      return newSelectedTypes;
+    });
   };
 
   return (
@@ -45,10 +47,8 @@ const Filter: React.FC<FilterProps> = ({ setFilter }) => {
           key={type}
           onClick={() => toggleType(type)}
           className={`mx-1 my-1 px-2 py-1 rounded ${
-            selectedTypes.includes(type)
-              ? "bg-red-500 text-white border-4 border-black"
-              : "bg-blue-500 text-white border-4 border-black"
-          } hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+            selectedTypes.includes(type) ? "bg-red-500" : "bg-blue-500"
+          } text-white border-4 border-black hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
         >
           {type.toUpperCase()}
         </button>
