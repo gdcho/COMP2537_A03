@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogTitle, DialogContent, Typography } from "@mui/material";
 
 interface Pokemon {
@@ -14,7 +14,15 @@ interface PokeCardProps {
 const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
   const [open, setOpen] = useState(false);
   const [pokemonData, setPokemonData] = useState<any>(null);
-  const [displayCard, setDisplayCard] = useState(true);
+
+  const displayCard = useMemo(() => {
+    if (filter.length > 0 && pokemonData) {
+      return filter.every((type) =>
+        pokemonData.types.some((t: any) => t.type.name === type)
+      );
+    }
+    return true;
+  }, [pokemonData, filter]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,28 +30,31 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
         const res = await fetch(pokemon.url);
         const data = await res.json();
         setPokemonData(data);
-        if (filter.length > 0) {
-          const hasAllTypes = filter.every((type) =>
-            data.types.some((t: any) => t.type.name === type)
-          );
-          setDisplayCard(hasAllTypes);
-        } else {
-          setDisplayCard(true);
-        }
       } catch (error) {
-        console.error("Error fetching Pokémon data:", error);
+        console.error("Error fetching data:", error);
       }
     };
     fetchData();
-  }, [pokemon.url, filter]);
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  }, [pokemon.url]);
 
   if (!displayCard) {
     return null;
   }
+
+  const PokeDetails = ({ title, items }: { title: string; items: any[] }) => (
+    <Typography variant="h6" color={"white"}>
+      {title}
+      <hr style={{ borderWidth: "2px", borderBlockColor: "blue" }} />
+      <ul style={{ color: "white" }}>
+        {items.map((item) => (
+          <li key={item.name}>
+            {item.name[0].toUpperCase() + item.name.slice(1)}:{" "}
+            {item.base_stat || ""}
+          </li>
+        ))}
+      </ul>
+    </Typography>
+  );
 
   return (
     <div
@@ -71,7 +82,7 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
 
       {pokemonData && (
         <Dialog
-          onClose={handleClose}
+          onClose={() => setOpen(false)}
           open={open}
           sx={{ "& .MuiPaper-root": { width: "300px" } }}
         >
@@ -104,27 +115,19 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
                 height={200}
                 className="mx-auto"
               />
-              <Typography variant="h6" color={"white"}>
-                Abilities
-                <hr style={{ borderWidth: "2px", borderBlockColor: "blue" }} />
-              </Typography>
-              <ul style={{ color: "white" }}>
-                {pokemonData.abilities.map((ability: any) => (
-                  <li key={ability.ability.name}>{ability.ability.name}</li>
-                ))}
-              </ul>
-
-              <Typography variant="h6" color={"white"}>
-                <br></br>Stats
-                <hr style={{ borderWidth: "2px", borderBlockColor: "blue" }} />
-              </Typography>
-              <ul style={{ color: "white" }}>
-                {pokemonData.stats.map((stat: any) => (
-                  <li key={stat.stat.name}>
-                    {stat.stat.name}: {stat.base_stat}
-                  </li>
-                ))}
-              </ul>
+              <PokeDetails
+                title="Abilities"
+                items={pokemonData.abilities.map((ability: any) => ({
+                  name: ability.ability.name,
+                }))}
+              />
+              <PokeDetails
+                title="Stats"
+                items={pokemonData.stats.map((stat: any) => ({
+                  name: stat.stat.name,
+                  base_stat: stat.base_stat,
+                }))}
+              />
             </div>
           </DialogContent>
         </Dialog>

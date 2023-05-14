@@ -48,43 +48,53 @@ export default function Page() {
   };
 
   useEffect(() => {
-    const fetchPokemons = async () => {
-      if (filter.length) {
-        const typePromises = filter.map((type) => fetchPokemonByType(type));
-        const allPokemonByType: PokemonWithType[][] = await Promise.all(
-          typePromises
-        );
+    const fetchTotalAndPokemons = async () => {
+      try {
+        const count = await fetchTotalCount();
+        setTotalCount(count);
+        setTotalPages(Math.ceil(count / PAGE_SIZE));
 
-        const intersection: PokemonWithType[] = allPokemonByType.reduce(
-          (accumulator: PokemonWithType[], current: PokemonWithType[]) => {
-            return accumulator.filter((poke: PokemonWithType) =>
-              current.some(
-                (innerPoke: PokemonWithType) => innerPoke.url === poke.url
-              )
-            );
-          }
-        );
+        if (filter.length) {
+          const typePromises = filter.map((type) => fetchPokemonByType(type));
+          const allPokemonByType: PokemonWithType[][] = await Promise.all(
+            typePromises
+          );
 
-        const filteredPokemons = intersection.slice(
-          (currentPage - 1) * PAGE_SIZE,
-          currentPage * PAGE_SIZE
-        );
-        setTotalFilteredPokemon(intersection.length);
-        setTotalPages(Math.ceil(intersection.length / PAGE_SIZE));
-        setPokemons(filteredPokemons);
-      } else {
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon?offset=${
-            (currentPage - 1) * PAGE_SIZE
-          }&limit=${PAGE_SIZE}`
-        );
-        const data = await response.json();
-        setTotalPages(Math.ceil(totalCount / PAGE_SIZE));
-        setPokemons(data.results);
+          const intersection: PokemonWithType[] = allPokemonByType.reduce(
+            (accumulator: PokemonWithType[], current: PokemonWithType[]) => {
+              return accumulator.filter((poke: PokemonWithType) =>
+                current.some(
+                  (innerPoke: PokemonWithType) => innerPoke.url === poke.url
+                )
+              );
+            }
+          );
+
+          const filteredPokemons = intersection.slice(
+            (currentPage - 1) * PAGE_SIZE,
+            currentPage * PAGE_SIZE
+          );
+          setTotalFilteredPokemon(intersection.length);
+          setTotalPages(Math.ceil(intersection.length / PAGE_SIZE));
+          setPokemons(filteredPokemons);
+        } else {
+          const response = await fetch(
+            `https://pokeapi.co/api/v2/pokemon?offset=${
+              (currentPage - 1) * PAGE_SIZE
+            }&limit=${PAGE_SIZE}`
+          );
+          const data = await response.json();
+          setTotalPages(Math.ceil(count / PAGE_SIZE));
+          setPokemons(data.results);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchPokemons();
+    fetchTotalAndPokemons();
   }, [currentPage, filter]);
 
   useEffect(() => {
@@ -98,13 +108,15 @@ export default function Page() {
         {pokemons.length > 0 ? (
           filter.length > 0 ? (
             <>
-              Filtered Pokémon: {totalFilteredPokemon}
-              <br />
-              Showing {PAGE_SIZE * (currentPage - 1) + 1} -{" "}
-              {Math.min(
-                PAGE_SIZE * (currentPage - 1) + pokemons.length,
-                totalFilteredPokemon
-              )}
+              <p className="text-lg text-white">
+                Filtered Pokémon: {totalFilteredPokemon}
+                <br />
+                Showing {PAGE_SIZE * (currentPage - 1) + 1} -{" "}
+                {Math.min(
+                  PAGE_SIZE * (currentPage - 1) + pokemons.length,
+                  totalFilteredPokemon
+                )}
+              </p>
             </>
           ) : (
             <>
@@ -121,14 +133,16 @@ export default function Page() {
           )
         ) : (
           <>
-            {filter.length > 0 ? "Filtered Pokémon: 0" : "Total Pokémon: 0"}
-            <br />
-            Showing 0-0
+            <p className="text-lg text-white">
+              {filter.length > 0 ? "Filtered Pokémon: 0" : "Total Pokémon: 0"}
+              <br />
+              Showing 0-0
+            </p>
           </>
         )}
       </div>
 
-      <div className="pokeCards grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="pokeCards grid grid-cols-[repeat(auto-fit,_75%)] grid-cols-1 justify-center sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {pokemons.map((pokemon) => (
           <PokeCard key={pokemon.name} pokemon={pokemon} filter={filter} />
         ))}

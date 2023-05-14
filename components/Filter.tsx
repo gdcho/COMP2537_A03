@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FilterProps {
   filter: string[];
@@ -29,28 +29,29 @@ const types = [
 const Filter: React.FC<FilterProps> = ({ setFilter }) => {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
-  const toggleType = (type: string) => {
+  useEffect(() => {
+    setFilter(selectedTypes);
+  }, [selectedTypes, setFilter]);
+
+  const filterType = (type: string) => {
     setSelectedTypes((selectedTypes) => {
-      const newSelectedTypes = selectedTypes.includes(type)
+      return selectedTypes.includes(type)
         ? selectedTypes.filter((t) => t !== type)
         : [...selectedTypes, type];
-
-      setFilter(newSelectedTypes);
-      return newSelectedTypes;
     });
   };
 
   return (
-    <div className="flex flex-row flex-wrap my-4">
+    <div className="flex justify-center flex-row flex-wrap my-4">
       {types.map((type) => (
         <button
           key={type}
-          onClick={() => toggleType(type)}
+          onClick={() => filterType(type)}
           className={`mx-1 my-1 px-2 py-1 rounded ${
             selectedTypes.includes(type) ? "bg-red-500" : "bg-blue-500"
           } text-white border-4 border-black hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
         >
-          {type.toUpperCase()}
+          {type[0].toUpperCase() + type.slice(1)}
         </button>
       ))}
     </div>
