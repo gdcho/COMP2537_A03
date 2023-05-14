@@ -48,13 +48,14 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
       <ul style={{ color: "white" }}>
         {items.map((item) => (
           <li key={item.name}>
-            {item.name[0].toUpperCase() + item.name.slice(1)}:{" "}
-            {item.base_stat || ""}
+            {item.name[0].toUpperCase() + item.name.slice(1)}{" "}
+            {title === "Stats" ? `: ${item.base_stat || ""}` : ""}
           </li>
         ))}
       </ul>
+      <br></br>
     </Typography>
-  );
+);
 
   return (
     <div
@@ -84,7 +85,7 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
         <Dialog
           onClose={() => setOpen(false)}
           open={open}
-          sx={{ "& .MuiPaper-root": { width: "300px" } }}
+          sx={{ "& .MuiPaper-root": { width: "400px" } }}
         >
           <DialogTitle>{pokemonData.name.toUpperCase()}</DialogTitle>
           <DialogContent
@@ -114,6 +115,12 @@ const PokeCard: React.FC<PokeCardProps> = ({ pokemon, filter }) => {
                 width={200}
                 height={200}
                 className="mx-auto"
+              />
+              <PokeDetails
+                title="Types"
+                items={pokemonData.types.map((type: any) => ({
+                  name: type.type.name,
+                }))}
               />
               <PokeDetails
                 title="Abilities"
